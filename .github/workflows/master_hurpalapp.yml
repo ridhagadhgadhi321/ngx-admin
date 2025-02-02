@@ -1,48 +1,68 @@
-jobs:
-  build_and_deploy_job:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
 
-      - name: Set up Node.js (v22.x)
+name: Build and deploy Node.js app to Azure Web App - HurPalApp
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '22'  # Use the latest Node.js version (v22.x)
+          node-version: '20.x'
 
-      - name: Uninstall node-sass and install sass
-        run: |
-          npm uninstall node-sass --legacy-peer-deps
-          npm install sass --legacy-peer-deps
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
-      - name: Install dependencies
-        run: |
-          npm install --legacy-peer-deps  # Bypass peer dependency conflicts
-
-      - name: Add a delay before deployment
-        run: sleep 30s  # Adds a 30-second delay to avoid SCM container restart conflict
-
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_ROCK_02FC09C10 }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
-          action: "upload"
-          app_location: "/"
-          api_location: ""
-          output_location: "dist"
+          name: node-app
+          path: release.zip
 
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+  deploy:
     runs-on: ubuntu-latest
-    name: Close Pull Request Job
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
     steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_ROCK_02FC09C10 }}
-          action: "close"
+          name: node-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_54581AF6F70A46BA8A08C0C7C589A7FB }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_48F9178B6932438B9D7FB32B12DAE16B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3F16C775225F4B35B39EB6F93A15B7B6 }}
+
+      - name: 'Deploy to Azure Web App'
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'HurPalApp'
+          slot-name: 'Production'
+          package: .
+          
