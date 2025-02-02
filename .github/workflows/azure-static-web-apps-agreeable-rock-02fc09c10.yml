@@ -23,6 +23,8 @@ jobs:
         run: |
           npm uninstall node-sass --legacy-peer-deps
           npm install sass --legacy-peer-deps
+      - name: Install dependencies
+        run: |
           npm install --legacy-peer-deps
       - name: Build And Deploy
         id: builddeploy
