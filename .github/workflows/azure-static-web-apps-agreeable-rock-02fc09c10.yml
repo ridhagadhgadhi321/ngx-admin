@@ -19,17 +19,21 @@ jobs:
         with:
           submodules: true
           lfs: false
-      - name: Set up Node.js (LTS version 18.x)
+
+      - name: Set up Node.js (v22.x)
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Use the latest LTS version (currently Node.js 18.x)
+          node-version: '22'  # Use the latest Node.js version (v22.x)
+
       - name: Uninstall node-sass and install sass
         run: |
           npm uninstall node-sass --legacy-peer-deps
           npm install sass --legacy-peer-deps
+
       - name: Install dependencies
         run: |
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps  # Ensures compatibility with older peer dependencies
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
