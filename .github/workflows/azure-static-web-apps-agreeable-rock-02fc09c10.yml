@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install --legacy-peer-deps  # Ensures compatibility with older peer dependencies
+          npm install --legacy-peer-deps  # Bypass peer dependency conflicts
 
       - name: Build And Deploy
         id: builddeploy
