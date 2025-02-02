@@ -30,6 +30,10 @@ jobs:
           npm uninstall node-sass --legacy-peer-deps
           npm install sass --legacy-peer-deps
 
+      - name: Upgrade @angular/google-maps to the latest version
+        run: |
+          npm install @angular/google-maps@latest --legacy-peer-deps  # Upgrade to the latest compatible version
+
       - name: Install dependencies
         run: |
           npm install --legacy-peer-deps  # Bypass peer dependency conflicts
