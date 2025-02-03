@@ -77,4 +77,4 @@ jobs:
         with:
           app-name: 'HurPalApp'
           slot-name: 'Production'
-          package: .
+          package: ./dist
